@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>test</title>
+		<script src="/socket.io/socket.io.js"></script>
+		<script type="text/javascript" src="/js/jquery-1.9.1.min.js" ></script>
+		<link rel="stylesheet" href="/css/index.css" />
+	</head>
+	<body>
+		<div class="chatroom">
+			<div class="fridlist">
+				<span class="username"></span>
+				<ul class="list"></ul>
+				<div id="div_01"></div>
+				
+				<div class="footer-left">
+					<button class="allPerson">群发助手</button>
+				</div>
+			</div>
+			<div class="myroom">
+				<div class="myname"></div>
+				<div class="chat-div">
+					
+				</div>
+				<div class="footer">
+					<textarea class="writer"></textarea>
+					<button class="sub">发送</button>
+				</div>
+				
+			</div>
+		</div>
+		<div class='wrapdiv'>
+			<div class='wrap'>
+				<input type="text" placeholder="输入你的昵称" class="nameinput"/>
+				<button class="sub-btn">立即加入</button>
+			</div>
+		</div>
+	</body>
+</html>
+<script>
+
+$(function(){
+	var socket=io.connect('http://5c8a2ad8.ngrok.io/');//与服务器进行连接
+	var username;
+	function seterrTips(txt){
+		$(".errtips").html(txt);
+		
+	};
+	
+	/*function setCookie(c_name,value,expiredays)
+	{
+	var exdate=new Date()
+	exdate.setDate(exdate.getDate()+expiredays)
+	document.cookie=c_name+ "=" +escape(value)+
+	((expiredays==null) ? "" : ";expires="+exdate.toGMTString())
+	}
+	
+	function getCookie(c_name)
+	{
+	if (document.cookie.length>0)
+	  {
+	  c_start=document.cookie.indexOf(c_name + "=")
+	  if (c_start!=-1)
+	    { 
+	    c_start=c_start + c_name.length+1 
+	    c_end=document.cookie.indexOf(";",c_start)
+	    if (c_end==-1) c_end=document.cookie.length
+	    return unescape(document.cookie.substring(c_start,c_end))
+	    } 
+	  }
+	return ""
+	}*/
+	
+	/*if(getCookie("chatroom") != ""){
+		username = getCookie("chatroom");
+		$(".username").html(username);
+		socket.emit('user', username);
+		//socket.emit('getUser');
+		
+	}else{
+		
+	}*/
+	function sendUser(val){
+		//setCookie("chatroom", val,10);
+		socket.emit('user', val);
+		$(".username").html(val);
+		socket.on("xterror",function(data){
+			if(!data){
+				hideDialog();
+			}else{
+				alert("用户已存在");
+			}
+		});
+	};
+	
+	function hideDialog(){
+		$(".wrapdiv").fadeOut();
+	}
+	
+	var _subBtn = document.querySelector(".sub-btn");
+	$(".sub-btn").click(function(){
+		var name = $(".nameinput").val();
+		name == "" ? seterrTips("*昵称不能为空") :sendUser(name);
+	});
+	$(".allPerson").click(function(){
+		socket.emit("allPerson","大家好");
+	});
+	$(".sub").click(function(){
+		var val = $(".writer").val();
+		var to = $(".myname").html();
+		if(to == ""){
+			alert("请选择好友");
+			return false;
+		}
+		var from = $(".username").html();
+		addMesg(val,from);
+		$(".chat-div").scrollTop($(".chat-div")[0].scrollHeight);  
+		socket.emit("mesg",from,to,val);	
+	});
+	
+	$(window).unload(function(){
+		var username = $(".username").html();
+		socket.emit("delUser",username);
+		socket.emit("disconnect",username);
+		
+	})
+	
+	function addMesg(msg,_to){
+		var $mesgDiv = $("<div class='msgitem'></div>");
+		var $mesgname = $("<div class='mesgname'>"+ _to +"</div>");
+		var $mesgcontent = $("<div class='mesgcontent'>"+ msg +"</div>");
+		$mesgcontent.appendTo($mesgDiv);
+		$mesgname.appendTo($mesgDiv);
+		$mesgDiv.appendTo($(".chat-div"));
+	}
+	function mesgModel(msg,From){
+		var $mesgDiv = $("<div class='msgPitem'></div>");
+		var $mesgname = $("<div class='mesgPname'>"+ From +"</div>");
+		var $mesgcontent = $("<div class='mesgPcontent'>"+ msg +"</div>");
+		$mesgname.appendTo($mesgDiv);
+		$mesgcontent.appendTo($mesgDiv);
+		$mesgDiv.appendTo($(".chat-div"));
+	}
+	function addPMesg(msg,From){
+		var _self;
+		$(".list li").each(function(index,elm){
+			if($(elm).children(".fname").html() == From && $(".myname").html() != From){
+				var htm = $(this).children(".msgtips").html();
+				if(htm == ""){
+					htm = 0;
+				}
+				
+				if(htm == 99 || htm == "99+"){
+					htm = "99+";
+				} else{
+					htm = +htm + 1;
+				}
+				$(this).children(".msgtips").html(htm).addClass("hasmesg");
+				_self = this
+				var frommesg = $(_self).attr("frommesg");
+				if(frommesg != "" && frommesg != undefined){
+					frommesg = frommesg + "@@" + msg;
+				} else{
+					frommesg = msg;
+				}
+				$(_self).attr("frommesg",frommesg);
+			}
+			if($(".myname").html() == From){
+				mesgModel(msg,From);
+			}
+		});
+		$(".chat-div").scrollTop($(".chat-div")[0].scrollHeight);  
+		
+	}
+	socket.on("leave",function(data){
+		var delName = data.data;
+		$(".list li").each(function(index, elm){
+			if($(elm).children(".fname").html() == delName){
+				$(elm).remove();
+			}
+		});
+	});
+	socket.on("sendAllUser",function(data){
+			var username = $(".username").html();
+			for(var i = 0;i<data.length; i++){
+				if(data[i] == username) continue;
+				var _li = $("<li></li>");
+				var _span = $("<span class='fname'></span>");
+				var _mspan = $("<span class='msgtips'></span>");
+				_span.html(data[i]);
+				_span.appendTo(_li);
+				_mspan.appendTo(_li);
+				_li.appendTo($(".list"));
+				_li.click(function(e){
+					var name = $(this).children(".fname").html();
+					$(".myname").html(name);
+					$(".chat-div").html("");
+					if($(this).children(".msgtips").hasClass("hasmesg")){
+						var mesg = $(this).attr("frommesg");
+						if(mesg.charAt("@@") != -1){
+							var arr = mesg.split("@@");
+							arr.map(function(elm,index){
+								mesgModel(elm,name);
+							});
+						} else {
+							mesgModel(mesg,name);
+						}
+					}
+					$(this).children(".msgtips").removeClass("hasmesg").html("");
+					$(".chat-div").scrollTop($(".chat-div")[0].scrollHeight); 
+					$(this).addClass("active").siblings().removeClass("active");
+					
+				});
+			}	
+	});
+	
+	socket.on("pmesg",function(data){
+			addPMesg(data.mess,data.FromTo);
+	});
+	
+	socket.on("xt",function(data){
+			alert(data.mess)
+			
+	});
+	
+	socket.on("allmsg",function(data){
+		alert(data.data);
+	});
+	
+})
+
+var offsetLeft,offsetTop,timer,mouse_x,mouse_y,margin_left,margin_top;
+var to_x,to_y;
+
+function drag(id,type){
+	var item=document.getElementById(id);
+	document.querySelector(".chatroom").onmousemove=function(e){
+		var e=e||window.event;
+		mouse_x=e.pageX;
+		mouse_y=e.pageY;	
+	};
+	item.onmousedown=function(){
+		// offsetTop以及offsetTop必须要放在mousedown里面，每次都要计算
+		offsetLeft=item.offsetLeft;
+		offsetTop=item.offsetTop;
+		margin_top=mouse_y-offsetTop;
+		margin_left=mouse_x-offsetLeft;
+		timer=setInterval(function(){
+			if(timer){
+				var max_with=800,max_height=600;
+				 to_x=mouse_x-margin_left;
+				 to_y=mouse_y-margin_top;
+				 to_x=Math.min(to_x,max_with);
+				 to_y=Math.min(to_y,max_height);
+				 // 一定要记得加“px"
+				 if(type=="x"){
+				 	item.style.left=to_x+"px";
+				 	document.querySelector(".fridlist").style.width=to_x+10+"px";
+				 	document.querySelector(".myroom").style.width=document.querySelector(".myroom").style.width-10+"px";			 
+				 }
+				 else if(type=="y"){
+				 	item.style.top=to_y+"px";
+				 	document.getElementById("div_03").style.top=to_y+"px";
+				 	document.getElementById("div_wrapper").style.height=to_y+10+"px";				
+				 }
+				 //默认为上下左右移动
+				 else {
+				 	item.style.left=to_x+"px";
+				 	item.style.top=to_y+"px";
+				 	// Style刷新
+			 		document.getElementById("div_01").style.left=to_x+"px";
+			 		document.getElementById("div_02").style.top=to_y+"px";
+			 		document.getElementById("div_wrapper").style.width=to_x+10+"px";
+			 		document.getElementById("div_wrapper").style.height=to_y+10+"px";
+				 }	 
+			}
+		},5);
+	};
+	document.onmouseup=function(){
+		clearInterval(timer);
+		timer=0;
+	}
+}
+
+window.onload=function(){
+	drag("div_01","x");
+}
+</script>

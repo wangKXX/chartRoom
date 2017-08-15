@@ -1,0 +1,256 @@
+html,body{
+    width: 100%;
+    
+    padding: 0;
+    margin: 0;
+    padding-top: 100px;
+}
+$defBgColor: #F1F1F1;
+$hoverBgColor:#5462b7;
+
+$defBorderColor: #a6a5a5;
+@mixin setBorder($border){
+    border-radius: $border;
+    -webkit-border-radius: $border;
+    -moz-border-radius: $border;
+}
+
+@mixin remDef{
+    outline: none;
+    border:0;
+}
+
+@mixin setMidY($top,$left){
+    position: absolute;
+    top: 50%;
+    margin-top: $top;
+    left: 50%;
+    margin-left: $left;
+}
+input,button{
+    @include remDef;
+    font-size: 16px;
+    padding: 8px;
+    
+}
+button{
+    background-color: $hoverBgColor;
+    @include setBorder(5px);
+    color: #fff;
+    cursor: pointer;
+}
+
+input{
+    border: 1px solid $defBorderColor;
+}
+ul{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    padding-bottom: 60px;
+    height: 430px;
+}
+li{
+    cursor: pointer;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 35px;
+    text-indent: 10px;
+    line-height: 35px;
+    
+    &:first-child{
+        margin-top: 10px;
+    }
+    &:hover{
+        background-color: #fff;
+    }
+    .hasmesg{
+        height: 25px;
+        width: 25px;
+        @include setBorder(50%);
+        background-color: red;
+        text-align: center;
+        line-height: 25px;
+        color: #fff;
+        font-size: 12px;
+        display: inline-block;
+        vertical-align: middle;
+        text-indent: 1px;
+    }
+    .fname{
+        display: inline-block;
+        vertical-align: top;
+        //min-width: 60%;
+    }
+}
+.wrapdiv{
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: rgba(0,0,0,.5);
+    width: 100%;
+    height: 100%;
+    .wrap{
+        width: 400px;
+        height: 150px;
+        background-color:#fff ;
+        @include setBorder(5px);
+        @include setMidY(-75px, -200px);
+        text-align: center;
+        input,button{
+            margin-top: 50px;
+        }
+        input{
+            margin-right: 10px;
+        }
+    }
+}
+.myname{
+    height: 50px;
+    width: 100%;
+    background-color: #F1F1F1;
+    border: 2px solid #F1F1F1;
+    line-height: 50px;
+    color: #424242;
+    text-indent: 10px;
+    box-shadow: 0 2px 0 #A6A5A5;
+}
+.chatroom{
+    width: 600px;
+    height: 550px;
+    background-color: #F1f1f1;
+    margin: 0 auto;
+   
+}
+.footer{
+    width: 100%;
+    height: 90px;
+    border: 2px solid $defBgColor;
+    border-top: 0;
+}
+.fridlist,.myroom{
+    display: inline-block;
+    vertical-align: top;
+}
+.fridlist{
+    width: 150px;
+    margin-right: -5px;
+    height: 100%;
+    position: relative;
+    
+}
+.myroom{
+    width: 445px;
+}
+.chat-div{
+    width: 100%;
+    height: 400px;
+    border: 2px solid $defBgColor;
+    background-color: #fff;
+    
+}
+.writer{
+    width: 81%;
+    display: inline-block;
+    vertical-align: top;
+    height: 80px;
+    @include remDef;
+    margin-top: 2px;
+    text-indent: 10px;
+    color: #424242;
+    font-size: 24px;
+}
+.sub{
+    width: 17.59%;
+    display: inline-block;
+    vertical-align: top;
+    height: 85px;
+    margin-top: 2px;
+    margin-left: -5px;
+    border-radius: inherit;
+    border: 2px solid $defBgColor;
+}
+.mesgname,.mesgcontent,.mesgPname,.mesgPcontent{
+    display: inline-block;
+    vertical-align: top;
+}
+.username{
+    display: block;
+    height: 56px;
+    line-height: 56px;
+    font-size: 24px;
+    background-color: #424242;
+    color: #fff;
+    text-indent: 15px;
+    font-weight: bold;
+}
+.mesgname{
+    width: 30px;
+    height: 30px;
+    background-color: #424242;
+    line-height: 30px;
+    text-align: center;
+    @include setBorder(50%);
+    margin-left: 15px;
+}
+.msgitem{
+    width: 100%;
+    float: right;
+    overflow: hidden;
+    text-align: right;
+    margin: 5px 0;
+}
+.msgPitem{
+    width: 100%;
+    float: right;
+    overflow: hidden;
+    text-align: left;
+    margin: 5px 0;
+    
+    .mesgPname{
+        width: 30px;
+        height: 30px;
+        background-color: #424242;
+        line-height: 30px;
+        text-align: center;
+        @include setBorder(50%);
+        margin-left: 15px;
+    }
+}
+.chat-div{
+    overflow-y: auto;
+}
+.footer-left{
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    button{
+        width: 100%;
+        border-radius: inherit;
+        background-color: #424242;
+        
+    }
+    button:hover{
+        background-color: #424242;
+    }
+}
+.active{
+    background-color: #A6A5A5;
+}
+.active:hover{
+   background-color: #A6A5A5;
+}
+#div_01{
+    position: absolute;
+    width: 5px;
+    height: 100%;
+    /*background-color: red;*/
+    top:0px;
+    right: 0px; 
+}
+#div_01:hover{
+    cursor: e-resize;
+}
